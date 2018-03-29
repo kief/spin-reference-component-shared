@@ -67,12 +67,13 @@ show: init
 
 prepare: clean validate ## Prepare for packaging, including running local tests
 
-validate: local-init
+validate:
+	mkdir -p $(shell dirname $(BASTION_KEYPAIR_FILE))
+	touch $(BASTION_KEYPAIR_FILE).pub
+	cd ./src && $(TERRAFORM) init -backend=false -input=false -upgrade=true
 	cd ./src && $(TERRAFORM) validate $(TERRAFORM_VARS)
 	@echo "Apparently no complaints about the terraform file syntax"
-
-local-init: create-keypair
-	cd ./src && $(TERRAFORM) init -backend=false -input=false -upgrade=true
+	rm -f $(BASTION_KEYPAIR_FILE).pub
 
 plan: init vars ## Preview changes without applying them
 	cd ./src && $(TERRAFORM) plan $(TERRAFORM_VARS)
