@@ -28,16 +28,30 @@ endif
 SSH_CONFIGURED_FOR_SERVICE=$(HOME)/.ssh/ssh_configured_for_$(SERVICE).$(COMPONENT).$(DEPLOYMENT_ID)
 BASTION_PUBLIC_DNS=$(shell cd ./src && $(TERRAFORM) output bastion_public_dns)
 
-init: $(BASTION_KEYPAIR_FILE)
+init: create-keypair
 	rm -f ./src/.terraform/*tfstate*
 	cd ./src && $(TERRAFORM) init -input=false -upgrade=$(UPGRADE_MODULES) -force-copy \
 		-backend-config="bucket=$(STATE_BUCKET_NAME)" \
 		-backend-config="key=$(STATE_PATH)" \
 		-backend-config="region=$(REGION)"
 
+create-keypair: $(BASTION_KEYPAIR_FILE) store-keypair
+
 $(BASTION_KEYPAIR_FILE):
 	mkdir -p .work
 	ssh-keygen -N '' -f $(BASTION_KEYPAIR_FILE) -b 4096
+
+store-keypair: $(BASTION_KEYPAIR_FILE)
+	@echo "aws ssm put-parameter \
+		--name $(BASTION_KEYPAIR_PARAMETER) \
+		--value cat $(BASTION_KEYPAIR_FILE) \
+		--type SecureString \
+		--overwrite"
+	@aws ssm put-parameter \
+		--name "$(BASTION_KEYPAIR_PARAMETER)" \
+		--value "$(shell cat $(BASTION_KEYPAIR_FILE))" \
+		--type SecureString \
+		--overwrite
 
 bastion-fingerprint:
 	@echo "Fingerprint for local file $(BASTION_KEYPAIR_FILE):"
@@ -62,7 +76,7 @@ validate: local-init
 	cd ./src && $(TERRAFORM) validate $(TERRAFORM_VARS)
 	@echo "Apparently no complaints about the terraform file syntax"
 
-local-init: $(BASTION_KEYPAIR_FILE)
+local-init: create-keypair
 	cd ./src && $(TERRAFORM) init -backend=false -input=false -upgrade=true
 
 plan: init vars ## Preview changes without applying them
