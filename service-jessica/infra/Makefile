@@ -26,7 +26,8 @@ else
 endif
 
 SSH_CONFIGURED_FOR_SERVICE=$(HOME)/.ssh/ssh_configured_for_$(SERVICE).$(COMPONENT).$(DEPLOYMENT_ID)
-BASTION_PUBLIC_DNS=$(shell cd ./src && $(TERRAFORM) output bastion_public_dns)
+BASTION_PUBLIC_DNS_PARAMETER="/$(ESTATE_ID)/$(COMPONENT)/$(NETWORK_SERVICE_NAME)/$(DEPLOYMENT_ID)/bastion_public_dns"
+BASTION_PUBLIC_DNS=$(shell aws ssm get-parameter --name "$(BASTION_PUBLIC_DNS_PARAMETER)" | jq -r '.Parameter | .Value')
 WEBSERVER_HOSTNAME=$(shell cd ./src && $(TERRAFORM) output webserver_hostname)
 
 init: $(BASTION_KEYPAIR_FILE) $(WEBSERVER_KEYPAIR_FILE)
@@ -107,16 +108,6 @@ inspec-infrastructure: inspec-init
 		-t aws:// \
 		--reporter json-rspec:./.work/inspec-infrastructure.json cli \
 		--attrs ./.work/env-attributes.yml
-
-inspec-server-bastion: inspec-init $(SSH_CONFIGURED_FOR_SERVICE)
-	inspec exec \
-		test/inspec/server-bastion \
-		--host=$(BASTION_PUBLIC_DNS) \
-		--user=ubuntu \
-		--backend=ssh \
-		--key-files=$(BASTION_KEYPAIR_FILE) \
-		--reporter=json-rspec:./.work/inspec-server-bastion.json cli \
-		--attrs=./.work/env-attributes.yml
 
 inspec-server-webserver: inspec-init $(SSH_CONFIGURED_FOR_SERVICE)
 	inspec exec \
