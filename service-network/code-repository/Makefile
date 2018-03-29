@@ -40,8 +40,14 @@ git-client: $(SSH_CONFIGURED_FOR_CODECOMMIT)
 
 $(SSH_CONFIGURED_FOR_CODECOMMIT): init
 	@echo "" >> $(HOME)/.ssh/config
-	echo "# Automatically added by the $(COMPONENT) project" >> $(HOME)/.ssh/config
-	echo "Host git-codecommit.*.amazonaws.com" >> $(HOME)/.ssh/config
+	@echo "# Automatically added by the $(COMPONENT) project" >> $(HOME)/.ssh/config
+	@echo "" >> $(HOME)/.ssh/config
+	@echo "Host *" >> $(HOME)/.ssh/config
+	@echo "  StrictHostKeyChecking no" >> $(HOME)/.ssh/config
+	@echo "  UserKnownHostsFile=/dev/null" >> $(HOME)/.ssh/config
+	@echo "" >> $(HOME)/.ssh/config
+	@echo "# Automatically added by the $(COMPONENT) project" >> $(HOME)/.ssh/config
+	@echo "Host git-codecommit.*.amazonaws.com" >> $(HOME)/.ssh/config
 	@echo "  User $(GIT_USERNAME)" >> $(HOME)/.ssh/config
 	@echo "  IdentityFile ~/.ssh/git_ssh" >> $(HOME)/.ssh/config
 	@echo "" >> $(HOME)/.ssh/config
