@@ -10,6 +10,8 @@ setup-delivery: setup-code-repository setup-pipeline ## Setup each service proje
 
 load-delivery: load-new-repo ## Load source code into the service project repositories
 
+update-delivery: update-repo ## Update source code into the service project repositories
+
 destroy-delivery: ## Destroy the source repos and pipelines, but not infrastructure
 	-cd pipeline && make destroy
 	-cd code-repository && make destroy
@@ -56,6 +58,9 @@ plan-code-repository:
 
 load-new-repo:
 	cd code-repository && make new-repo
+
+update-repo:
+	cd code-repository && make push-fresh
 
 plan-pipeline:
 	cd pipeline && make plan

@@ -10,6 +10,11 @@ load-delivery:  ## Load source code into the service project repositories
 	cd service-jessica && make load-delivery
 	cd service-luke && make load-delivery
 
+update-delivery:  ## Load source code into the service project repositories
+	cd service-network && make update-repo
+	cd service-jessica && make update-repo
+	cd service-luke && make update-repo
+
 plan-delivery: ## See what's involved in setting up the delivery infrastructure
 	cd service-network && make plan-delivery
 	cd service-jessica && make plan-delivery
