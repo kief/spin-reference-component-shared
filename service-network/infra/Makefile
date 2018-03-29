@@ -42,11 +42,6 @@ $(BASTION_KEYPAIR_FILE):
 	ssh-keygen -N '' -f $(BASTION_KEYPAIR_FILE) -b 4096
 
 store-keypair: $(BASTION_KEYPAIR_FILE)
-	@echo "aws ssm put-parameter \
-		--name $(BASTION_KEYPAIR_PARAMETER) \
-		--value cat $(BASTION_KEYPAIR_FILE) \
-		--type SecureString \
-		--overwrite"
 	@aws ssm put-parameter \
 		--name "$(BASTION_KEYPAIR_PARAMETER)" \
 		--value "$(shell cat $(BASTION_KEYPAIR_FILE))" \

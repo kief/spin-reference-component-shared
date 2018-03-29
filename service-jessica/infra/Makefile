@@ -38,8 +38,12 @@ init: $(BASTION_KEYPAIR_FILE) $(WEBSERVER_KEYPAIR_FILE)
 		-backend-config="region=$(REGION)"
 
 $(BASTION_KEYPAIR_FILE):
-	mkdir -p .work
-	ssh-keygen -N '' -f $(BASTION_KEYPAIR_FILE) -b 4096
+	mkdir -p $(shell dirname $(BASTION_KEYPAIR_FILE))
+	aws ssm get-parameter \
+		--name "$(BASTION_KEYPAIR_PARAMETER)" \
+		--with-decryption \
+		| jq -r '.Parameter | .Value' \
+		> $(BASTION_KEYPAIR_FILE)
 
 bastion-fingerprint:
 	@echo "Fingerprint for local file $(BASTION_KEYPAIR_FILE):"
